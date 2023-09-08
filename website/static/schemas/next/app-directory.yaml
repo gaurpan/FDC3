@@ -313,9 +313,20 @@ components:
           description: >
             The unique application identifier located within a specific
             application directory instance.
+        title:
+          type: string
+          description: >-
+            Title for the application, typically used in a launcher UI.
+        type:
+          $ref: '#/components/schemas/Type'
+        details:
+          $ref: '#/components/schemas/LaunchDetails'
         name:
           type: string
           description: >
+            Deprecated in favour of using `appId` to identify apps and `title`
+            for their display names.
+            
             The name of the application.
 
             The name should be unique within an FDC3 App Directory instance. The
@@ -324,21 +335,13 @@ components:
 
             The same appName could occur in other directories. We are not
             currently specifying app name conventions in the document.
-        type:
-          $ref: '#/components/schemas/Type'
-        details:
-          $ref: '#/components/schemas/LaunchDetails'
+          deprecated: true
         version:
           type: string
           description: >-
             Version of the application. This allows multiple app versions to be
             defined using the same app name. This can be a triplet but can also
             include things like 1.2.5 (BETA)
-        title:
-          type: string
-          description: >-
-            Optional title for the application, if missing use appName,
-            typically used in a launcher UI.
         tooltip:
           type: string
           description: Optional tooltip description e.g. for a launcher
@@ -430,10 +433,15 @@ components:
             The name of the company that owns the application. The publisher has
             control over their namespace/app/signature.
         customConfig:
+          deprecated: true
           type: array
           description: >-
             An optional set of name value pairs that can be used to deliver
-            custom data from an App Directory to a launcher.
+            custom data from an App Directory to a launcher. Deprecated due to a 
+            lack of a standard means of retrieval via the Desktop Agent API. To 
+            be replaced in a future version with an `applicationConfig` element 
+            and standard API to retrieve it. See issue 
+            [#1006](https://github.com/finos/FDC3/issues/1006) for details.
           items:
             $ref: '#/components/schemas/NameValuePair'
         hostManifests:
@@ -450,7 +458,7 @@ components:
         discussed elsewhere in the FDC3 App Directory spec.
       required:
         - appId
-        - name
+        - title
         - type
         - details
       allOf:
@@ -608,7 +616,7 @@ components:
       type: object # keys should be constrained to valid language tags '^[a-z]{2}(-[a-zA-Z0-9]{2,8}){0,1}$' - not possible to express in OpenAPI without moving to v3.1.0 and the javascript/jsonschema version
       description: >
         Provides localized alternatives to any field of the AppD record, which may also refer to an alternative
-        version of the application that is also localized (e.g. by providing customConfig or an alternative URL). 
+        version of the application that is also localized (e.g. by providing an alternative URL). 
         The keys to this object should be language tags as defined by IETF RFC 5646, e.g. en, en-GB or fr-FR.
       additionalProperties:
         x-additionalPropertiesName: Language tag
@@ -621,7 +629,8 @@ components:
       properties:
         displayName:
           type: string
-          description: An optional display name for the intent that may be used in UI instead of the name.
+          description: Optional display name for the intent. Deprecated in favour of the intent name, which is common amongst all apps that support it, where the display name may vary as it is defined in the app's AppD record.
+          deprecated: true
         contexts:
           type: array
           items:
@@ -637,10 +646,11 @@ components:
             or a combination that indicates a channel that returns a particular context type 
             (e.g. "channel<fdc3.instrument>").
         customConfig:
+          deprecated: true
           type: object
           description: >-
             Custom configuration for the intent that may be required for a
-            particular desktop agent.
+            particular desktop agent. Deprecated due to a lack of defined use cases.
     Interop:
       type: object
       description: |
@@ -714,11 +724,13 @@ components:
           items:
             type: object
             required:
-              - name
+              - id
             properties:
-              name:
+              id:
                 type: string
-                description: The name of the App Channel.
+                description: >
+                  The id of the App Channel. 
+                  N.b. in FDC3 2.0 this field was incorrectly  called `name`.
               description:
                 type: string
                 description: A description of how the channel is used.
@@ -767,10 +779,11 @@ components:
             A comma separated list of the types of contexts the intent offered by the application can process. 
             where the first part of the context type is the namespace e.g."fdc3.contact, org.symphony.contact"
         customConfig:
+          deprecated: true
           type: object
           description: >-
             Custom configuration for the intent that may be required for a
-            particular desktop agent.
+            particular desktop agent. Deprecated due to a lack of defined use cases.
     ApplicationV1:
       description: >
         (Deprecated v1 API version) Defines an application retrieved from an FDC3 App Directory, which can
@@ -857,6 +870,7 @@ components:
           items:
             $ref: '#/components/schemas/IconV1'
         customConfig:
+          deprecated: true
           type: array
           description: >-
             An optional set of name value pairs that can be used to deliver
@@ -886,7 +900,6 @@ components:
     FDC3WorkbenchAppDefinition:
       value:
         appId: fdc3-workbench
-        name: fdc3-workbench
         title: FDC3 Workbench
         description: Development and test tool for FDC3 desktop agents and apps
         categories: [developer tools, training]
@@ -894,7 +907,7 @@ components:
         tooltip: FDC3 Workbench
         lang: en-US
         icons:
-          - src: http://fdc3.finos.org/toolbox/fdc3-workbench/fdc3-icon-256.png
+          - src: https://fdc3.finos.org/toolbox/fdc3-workbench/fdc3-icon-256.png
         screenshots:
           - src: https://fdc3.finos.org/docs/assets/fdc3-logo.png
             label: FDC3 logo
@@ -965,7 +978,6 @@ components:
     MyAppDefinition:
       value:
         appId: my-application
-        name: my-application
         title: My Application
         description: An example application that uses FDC3 and fully describes itself in an AppD record.
         categories: [market data, research, news]
@@ -1042,11 +1054,9 @@ components:
           intents: 
             listensFor: 
               ViewChart: 
-                displayName: View Chart
                 contexts: 
                   - fdc3.instrument
               myApp.GetPrice: 
-                displayName: Get Price
                 contexts: 
                   - fdc3.instrument
                 resultType: myApp.quote
@@ -1064,7 +1074,7 @@ components:
               - fdc3.instrument
               - fdc3.organization
           appChannels: 
-            - name: myApp.quotes,
+            - id: myApp.quotes,
               description: >-
                 Used to share a stream of quotes for currently displayed instrument and may be used to change the currently displayed symbol,
               broadcasts: 
@@ -1080,7 +1090,6 @@ components:
       value:
         applications: # you can't $ref inside a $ref so example is repeated here for search response
           - appId: my-application
-            name: my-application
             title: My Application
             description: An example application that uses FDC3 and fully describes itself in an AppD record.
             categories: [market data, research, news]
@@ -1157,11 +1166,9 @@ components:
               intents: 
                 listensFor: 
                   ViewChart: 
-                    displayName: View Chart
                     contexts: 
                       - fdc3.instrument
                   myApp.GetPrice: 
-                    displayName: Get Price
                     contexts: 
                       - fdc3.instrument
                     resultType: myApp.quote
@@ -1179,7 +1186,7 @@ components:
                   - fdc3.instrument
                   - fdc3.organization
               appChannels: 
-                - name: myApp.quotes,
+                - id: myApp.quotes,
                   description: >-
                     Used to share a stream of quotes for currently displayed instrument and may be used to change the currently displayed symbol,
                   broadcasts:
@@ -1191,7 +1198,6 @@ components:
                 title: Mon application,
                 description: Un exemple d'application qui utilise FDC3 et se décrit entièrement dans un enregistrement AppD.
           - appId: fdc3-workbench
-            name: fdc3-workbench
             title: FDC3 Workbench
             description: Development and test tool for FDC3 desktop agents and apps
             categories: [developer tools, training]
@@ -1199,7 +1205,7 @@ components:
             tooltip: FDC3 Workbench
             lang: en-US
             icons:
-              - src: http://fdc3.finos.org/toolbox/fdc3-workbench/fdc3-icon-256.png
+              - src: https://fdc3.finos.org/toolbox/fdc3-workbench/fdc3-icon-256.png
             screenshots:
               - src: https://fdc3.finos.org/docs/assets/fdc3-logo.png,
                 label: FDC3 logo

@@ -22,7 +22,7 @@ Examples of Desktop Agents include:
 - OpenFin
 - Refinitiv Eikon
 
-An FDC3-compliant Desktop Agent exposes an FDC3 standard API to applications they have launched.  When an App is launched by a Desktop Agent and is given access to the Agent's API to interoperate, it is running in that Desktop Agent's *context*.
+An FDC3-compliant Desktop Agent exposes an FDC3 Standard API to applications they have launched.  When an App is launched by a Desktop Agent and is given access to the Agent's API to interoperate, it is running in that Desktop Agent's *context*.
 
 ### Application
 
@@ -84,13 +84,15 @@ Are all areas of functionality that any feature-complete desktop agent would imp
 
 ### Inter-Agent Communication
 
-A goal of FDC3 standards is that applications running in different Desktop Agent contexts on the same desktop would be able to interoperate.  And that one Desktop Agent context would be able to discover and launch an application in another Desktop Application context.
+A goal of the FDC3 Standard is that applications running in different Desktop Agent contexts on the same desktop, or operated by the same user, would be able to interoperate and that one Desktop Agent context would be able to discover and launch an application in another Desktop Application context. As Desktop Agent interop is supported by common standards for APIs an app in one Desktop Agent context would not need to know a different syntax to launch or interact with an app in another Desktop Agent context.
+
+Inter-agent communication at the API layer may be achieved via the [Desktop Agent Bridging Part of the FDC3 Standard](../agent-bridging/spec) ([@experimental](../fdc3-compliance#experimental-features)), which defines an independent service that Desktop Agents may connect to, and a protocol for the exchange of messages relating to FDC3 API calls. Hence, by implementing support for Desktop Agent Bridging, a platform may extend interop across applications running in multiple Desktop Agent contexts.
+
+Desktop Agent Bridging provides message exchanges and a workflow for performing intent resolution across multiple agents. Hence, app discovery is supported across the agents connected to the bridge for intent-based workflows. Further, as channels are also supported by bridging, context sharing also works across multiple agents.
+
+There is currently no method of discovering all the apps supported by a Desktop Agent in the FDC3 API nor bridging. Hence, to support launching, via `fdc3.open` across the connected Desktop Agents, application details must be known in advance. This may be achieved by connecting Desktop Agents to the same App Directories.
 
 ![Desktop Agent - Interop](/assets/api-2.png)
-
-Desktop Agent interop is supported by common standards for APIs for App discovery and launching.  So, an App in one Desktop Agent context would not need to know a different syntax to call an App in another Desktop Agent context.
-
-An actual connection protocol between Desktop Agents is not currently available in the FDC3 standard, but work on creating one for a future version of the standard is underway (see [GitHub discussion #544](https://github.com/finos/FDC3/discussions/544) for details).
 
 ### Desktop Agent API Standard Compliance
 
@@ -121,6 +123,7 @@ An FDC3 Standard compliant Desktop Agent implementation **MUST**:
 - Provide an ID for each [`PrivateChannel`](ref/PrivateChannel) created via [`createPrivateChannel`](ref/DesktopAgent#createprivatechannel) and prevent them from being retrieved via [`getOrCreateChannel`](ref/DesktopAgent#getorcreatechannel) by ID.
 - Only require app directories that they connect to to have implemented only the minimum requirements specified in the [App Directory API Part](../app-directory/spec) of this Standard.
 - Provide details of whether they implement optional features of the Desktop Agent API in the `optionalFeatures` property of the [`ImplementationMetadata`](ref/Metadata#implementationmetadata) object returned by the [`fdc3.getInfo()`](ref/DesktopAgent#getinfo) function.
+- Allow, by default, at least a 15 second timeout for an application, launched via [`fdc3.open`](../api/ref/DesktopAgent#open), [`fdc3.raiseIntent`](../api/ref/DesktopAgent#raiseintent) or [`fdc3.raiseIntentForContext`](../api/ref/DesktopAgent#raiseintentforcontext) to add any context listener (via [`fdc3.addContextListener`](../api/ref/DesktopAgent#addcontextlistener)) or intent listener (via [`fdc3.addIntentListener`](../api/ref/DesktopAgent#addintentlistener)) necessary to deliver context or intent and context to it on launch. This timeout only applies to listeners needed to receive context on launch; further intent and context listeners not required on launch MAY be added later.
 
 An FDC3 Standard compliant Desktop Agent implementation **SHOULD**:
 
@@ -352,6 +355,8 @@ Applications need to let the system know the intents they can support.  Typicall
 
 When an instance of an application is launched, it is expected to add an [`IntentHandler`](ref/Types#intenthandler) function to the Desktop Agent for each intent it has registered by calling the [`fdc3.addIntentListener`](ref/DesktopAgent#addintentlistener) function of the Desktop Agent. Doing so allows the Desktop Agent to pass incoming intents and contexts to that instance of the application. Hence, if the application instance was spawned in response to the raised intent, then the Desktop Agent must wait for the relevant intent listener to be added by that instance before it can deliver the intent and context to it. In order to facilitate accurate error responses, calls to `fdc3.raiseIntent` should not return an `IntentResolution` until the intent handler has been added and the intent delivered to the target app.
 
+Intent handlers SHOULD be registered via [`fdc3.addIntentListener`](ref/DesktopAgent#addintentlistener) within 15 seconds of the application launch (the minimum timeout Desktop Agents are required to provide) in order to be widely compatible with Desktop Agent implementations. Individual Desktop Agent implementations MAY support longer timeouts or configuration to control or extend timeouts.
+
 ### Originating App Metadata
 
 Optional metadata about each intent & context message received, including the app that originated the message, SHOULD be provided by the desktop agent implementation to registered intent handlers. As this metadata is optional, apps making use of it MUST handle cases where it is not provided.
@@ -370,28 +375,35 @@ Context channels allows a set of apps to share a stateful piece of data between 
 
 There are three types of channels, which have different visibility and discoverability semantics:
 
-1. **User channels**, which:
+1. ***User channels***, which:
+
     - facilitate the creation of user-controlled context links between applications (often via the selection of a color channel),
     - are created and named by the desktop agent,
     - are discoverable (via the [`getUserChannels()`](ref/DesktopAgent#getuserchannels) API call),
     - can be 'joined' (via the [`joinUserChannel()`](ref/DesktopAgent#joinuserchannel) API call).
 
     :::note
+
     Prior to FDC3 2.0, 'user' channels were known as 'system' channels. They were renamed in FDC3 2.0 to reflect their intended usage, rather than the fact that they are created by system (which could also create 'app' channels).
+
     :::
 
     :::note
+
     Earlier versions of FDC3 included the concept of a 'global' system channel
     which was deprecated in FDC3 1.2 and removed in FDC3 2.0.
+
     :::
 
-2. **App channels**, which:
+2. ***App channels***, which:
+
     - facilitate developer controlled messaging between applications,
     - are created and named by applications (via the [`getOrCreateChannel()`](ref/DesktopAgent#getorcreatechannel) API call),
     - are not discoverable,
     - are interacted with via the [Channel API](ref/Channel) (accessed via the desktop agent [`getOrCreateChannel`](ref/DesktopAgent#getorcreatechannel) API call)
 
-3. **Private** channels, which:
+3. ***Private*** channels, which:
+
     - facilitate private communication between two parties,
     - have an auto-generated identity and can only be retrieved via a raised intent.
 

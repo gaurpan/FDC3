@@ -8,19 +8,54 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-* Added a `MalformedContext` error to the `OpenError`, `ChannelError` and `ResolveError` enumerations, to be used when `broadcast`, `open`, `findIntents`, `raiseIntents` and other related functions are passed an invalid context Object. ([#972](https://github.com/finos/FDC3/pull/972))
+* Added `CreateInteraction` intent. To be used when a user wants to record an interaction into a system.  New context `Interaction` also introduced. An interaction might be a call, IM, email, a meeting (physical or virtual) or the preparation of some specialist data. ([#747](https://github.com/finos/FDC3/pull/747))
+* Added `TransactionResult` context. A context type representing the result of a transaction initiated via FDC3. Its purpose is to provide a status and message (where needed) for the transaction and MAY wrap a returned context object. ([#761] (https://github.com/finos/FDC3/pull/761))
+* Added a `MalformedContext` error to the `OpenError`, `ChannelError` and `ResolveError` enumerations, to be used when `broadcast`, `open`, `findIntents`, `raiseIntents`, and other related functions are passed an invalid context Object. ([#972](https://github.com/finos/FDC3/pull/972))
 * Added error examples to the /v2 App Directory API routes ([#973](https://github.com/finos/FDC3/pull/973))
+* Added a `SendChatMessage` intent to be used when a user wants to send a message to an existing chat room. ([#794](https://github.com/finos/FDC3/pull/794))
+* Added a context type representing a chat message (`fdc3.chat.message`). ([#794](https://github.com/finos/FDC3/pull/794))
+* Added a context type representing a chat room (`fdc3.chat.room`). ([#794](https://github.com/finos/FDC3/pull/794))
+* Added a chat `Message` type in order to describe messages with rich content and attachments. ([#779](https://github.com/finos/FDC3/pull/779))
+* Added an `Action` type, encapsulating either a `Context` or the association of a `Context` with an `Intent` inside another object.  ([#779](https://github.com/finos/FDC3/pull/779))
+* Added a `ViewChat` Intent to be used when a user wants to open an existing chat room. ([#796](https://github.com/finos/FDC3/pull/796))
+* Added a `ViewMessages` intent to be used when a user wants to search and see a list of messages. ([#797](https://github.com/finos/FDC3/pull/797))
+* Added a context type representing a ChatSearchCriteria (`fdc3.chat.searchCriteria`). ([#797](https://github.com/finos/FDC3/pull/797))
+* Added an indication that applications, that can be launched to receive intents or context via a raised intent or open with context, SHOULD add their context or intent listeners via the API within 15 seconds, and that Desktop Agents MUST allow at least a 15 second timeout for them to do so, and MAY set a longer timeout  ([#987](https://github.com/finos/FDC3/pull/987))
+* Added [@experimental](https://fdc3.finos.org/docs/fdc3-compliance#experimental-features) `Order`, `OrderList`, `Product`, `Trade` & `TradeList` context types. ([#1021](https://github.com/finos/FDC3/pull/1021))
+* Added Agent Bridging as an [@experimental](https://fdc3.finos.org/docs/fdc3-compliance#experimental-features) 5th part of the FDC3 Standard. ([#968](https://github.com/finos/FDC3/pull/968))
 
 ### Changed
 
+* Updated definition of the `ChatInitSettings` context type to use the new `Message` type.  ([#779](https://github.com/finos/FDC3/pull/779))
+* Updated the `StartChat` intent to return a reference to the room. ([#794](https://github.com/finos/FDC3/pull/794))
 * Updated definition of the `Instrument` context type to include optional market identifiers ([#819](https://github.com/finos/FDC3/pull/819))
 * Corrected API functions and object types to always use `string` instead of `String` ([#924](https://github.com/finos/FDC3/pull/924))
+* Updated definition of the `otherConfig` element of the `Chart` context type from an Object to an array of Contexts as this allows the `type` of each additional item of config to be examined before it is used ([#985](https://github.com/finos/FDC3/pull/985))
+* Corrected the appD `interop.appChannels` metadata to use an `id` field to identify channels, rather than `name` ([#981](https://github.com/finos/FDC3/pull/981))
+* The App Directory OpenAPI schema was converted from YAML to JSON Schema, containing the same definitions. ([#1035](https://github.com/finos/FDC3/pull/1035))
 
 ### Deprecated
 
+* Deprecated the `name` field in AppD records, to match the deprecation of API signatures and metadata objects using `name` (see [#722](https://github.com/finos/FDC3/pull/722)) in 2.0. ([#928](https://github.com/finos/FDC3/pull/928))
+* Deprecated `IntentMetadata.displayName` and the appD record's `interop.intents.listensFor[].displayName` field in favor of using intent names for display (which are required to be recognizable) as it can be set differently for each application in the appD ([#926](https://github.com/finos/FDC3/pull/926))
+* Deprecated the `customConfig` field in an AppD record due to the lack of a standard API to retrieve it. To be replaced with an `applicationConfig` element with a Desktop Agent API call to retrieve it in a future version (see [#1006](https://github.com/finos/FDC3/issues/1006) for more details). Also deprecates the `customCOnfig` element of an Intent configuration due to a lack of documented use cases. ([#982](https://github.com/finos/FDC3/pull/982))
+
 ### Fixed
 
+* Corrected chatInitSettings context schema to incorporate the Context schema. ([#869](https://github.com/finos/FDC3/pull/869))
+* Corrected schema syntax in chatInitSettings and renamed the `public` property to `isPublic` (as `public` is a reserved keyword in javascript). ([#875](https://github.com/finos/FDC3/pull/875))
 * Further clarified the difference between the behavior of User channels and other channel types on joinUserChannel/addContextListener. ([#971](https://github.com/finos/FDC3/pull/971))
+* Clarified description of the behavior of `IntentResolution.getResult()` when the intent handler returned void (which is not an error). ([#1004](https://github.com/finos/FDC3/pull/1004))
+* An error was fixed in the appD schema where launch details sub-schemas were combined with `oneOf`, rather than `anyOf`. This causes validation errors for web or online native apps as their details elements overlap on a `url` field. ([#1034](https://github.com/finos/FDC3/pull/1034))
+* The appD `icon` and `screenshot` sub-schemas were updated to require the `src` value is set and restrict additional values, ensuring that common mistakes (such as ussing a `url` rather than `src` field are caught by the schemas when used to validate. ([#1037](https://github.com/finos/FDC3/pull/1037))
+* Linting, spell checking other corrections were applied to markdown syntax throughout the FDC3 documentation ([#1032](https://github.com/finos/FDC3/pull/1032))
+
+## [npm v2.0.3] - 2023-05-31
+
+### Changed
+
+* Applied missing `readonly` tags to `ImplementationMetadata.optionalFeatures` sub-properties. ([#1008](https://github.com/finos/FDC3/pull/1008))
+
 ## [npm v2.0.2] - 2023-05-24
 
 ### Changed

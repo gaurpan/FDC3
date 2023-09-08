@@ -36,7 +36,7 @@ export interface DesktopAgent {
    *
    * Returns an `AppIdentifier` object with the `instanceId` field set identifying the instance of the application opened by this call.
    *
-   * If an error occurs while opening the app, the promise MUST be rejected with an `Error` Object with a `message` chosen from the `OpenError` enumeration.
+   * If an error occurs while opening the app, the promise MUST be rejected with an `Error` Object with a `message` chosen from the `OpenError` enumeration, or (if connected to a Desktop Agent Bridge) the `BridgingError` enumeration.
    *
    * ```javascript
    * //Open an app without context, using an AppIdentifier object to specify the target by `appId`.
@@ -56,7 +56,7 @@ export interface DesktopAgent {
    * It returns a promise resolving to the intent, its metadata and metadata about the apps and app instances that registered that intent.
    * This can be used to raise the intent against a specific app or app instance.
    *
-   * If the resolution fails, the promise MUST be rejected with an `Error` Object with a `message` chosen from the `ResolveError` enumeration. This includes the case where no apps are found that resolve the intent, when the `ResolveError.NoAppsFound` message should be used, and when an invalid context object is passed as an argument, when the `ResolveError.MalformedContext` message should be used.
+   * If the resolution fails, the promise MUST be rejected with an `Error` Object with a `message` chosen from the `ResolveError` enumeration, or (if connected to a Desktop Agent Bridge) the `BridgingError` enumeration. This includes the case where no apps are found that resolve the intent, when the `ResolveError.NoAppsFound` message should be used, and when an invalid context object is passed as an argument, when the `ResolveError.MalformedContext` message should be used.
    *
    * Result types may be a type name, the string "channel" (which indicates that the app
    * will return a channel) or a string indicating a channel that returns a specific type,
@@ -72,7 +72,7 @@ export interface DesktopAgent {
    *
    * // returns a single AppIntent:
    * // {
-   * //     intent: { name: "StartChat", displayName: "Chat" },
+   * //     intent: { name: "StartChat" },
    * //   apps: [
    * //    { appId: "Skype" },
    * //    { appId: "Symphony" },
@@ -88,7 +88,7 @@ export interface DesktopAgent {
    * // returns an AppIntent, but with multiple options for resolution,
    * // which includes an existing instance of an application:
    * // {
-   * //   intent: { name: "StartChat", displayName: "Chat" },
+   * //   intent: { name: "StartChat" },
    * //   apps: [
    * //    { appId: "Skype" },
    * //    { appId: "Symphony" },
@@ -104,7 +104,7 @@ export interface DesktopAgent {
    *
    * // returns only apps that support the type of the specified input context:
    * // {
-   * //     intent: { name: "StartChat", displayName: "Chat" },
+   * //     intent: { name: "StartChat" },
    * //     apps: [{ appId: "Symphony" }]
    * // }
    *
@@ -112,7 +112,7 @@ export interface DesktopAgent {
    *
    * // returns only apps that return the specified result Context type:
    * // {
-   * //     intent: { name: "ViewContact", displayName: "View Contact Details" },
+   * //     intent: { name: "ViewContact" },
    * //     apps: { appId: "MyCRM", resultType: "fdc3.ContactList"}]
    * // }
    *
@@ -120,7 +120,7 @@ export interface DesktopAgent {
    *
    * // returns only apps that return a channel which will receive the specified input and result types:
    * // {
-   * //     intent: { name: "QuoteStream", displayName: "Quotes stream" },
+   * //     intent: { name: "QuoteStream" },
    * //     apps: [{ appId: "MyOMS", resultType: "channel<fdc3.Quote>"}]
    * // }
    * ```
@@ -133,7 +133,7 @@ export interface DesktopAgent {
    * `findIntentsByContext` is effectively granting programmatic access to the Desktop Agent's resolver.
    * It returns a promise resolving to an `AppIntent` which provides details of the intent, its metadata and metadata about the apps and app instances that are registered to handle it. This can be used to raise the intent against a specific app or app instance.
    *
-   * If the resolution fails, the promise MUST be rejected with an `Error` Object with a `message` chosen from the `ResolveError` enumeration. This includes the case where no intents with associated apps are found, when the `ResolveError.NoAppsFound` message should be used, and when an invalid context object is passed as an argument, when the `ResolveError.MalformedContext` message should be used.
+   * If the resolution fails, the promise MUST be rejected with an `Error` Object with a `message` chosen from the `ResolveError` enumeration, or (if connected to a Desktop Agent Bridge) the `BridgingError` enumeration. This includes the case where no intents with associated apps are found, when the `ResolveError.NoAppsFound` message should be used, and when an invalid context object is passed as an argument, when the `ResolveError.MalformedContext` message should be used.
    *
    * The optional `resultType` argument may be a type name, the string "channel" (which indicates that the app
    * should return a channel) or a string indicating a channel that returns a specific type,
@@ -148,11 +148,11 @@ export interface DesktopAgent {
    * // returns for example:
    * // [
    * //   {
-   * //     intent: { name: "StartCall", displayName: "Call" },
+   * //     intent: { name: "StartCall" },
    * //     apps: [{ name: "Skype" }]
    * //   },
    * //   {
-   * //     intent: { name: "StartChat", displayName: "Chat" },
+   * //     intent: { name: "StartChat" },
    * //     apps: [
    * //       { appId: "Skype" },
    * //       { appId: "Symphony" },
@@ -166,7 +166,7 @@ export interface DesktopAgent {
    * const appIntentsForType = await fdc3.findIntentsByContext(context, "fdc3.ContactList");
    * // returns for example:
    * // [{
-   * //     intent: { name: "ViewContact", displayName: "View Contacts" },
+   * //     intent: { name: "ViewContact" },
    * //     apps: [{ appId: "MyCRM", resultType: "fdc3.ContactList"}]
    * // }];
    *
@@ -187,7 +187,7 @@ export interface DesktopAgent {
    *
    * If there are no instances of the specified application the returned promise should resolve to an empty array.
    *
-   * If the request fails for another reason, the promise MUST be rejected with an `Error` Object with a `message` chosen from the `ResolveError` enumeration.
+   * If the request fails for another reason, the promise MUST be rejected with an `Error` Object with a `message` chosen from the `ResolveError` enumeration, or (if connected to a Desktop Agent Bridge) the `BridgingError` enumeration.
    *
    * ```javascript
    * // Retrieve a list of instances of an application
@@ -225,12 +225,12 @@ export interface DesktopAgent {
   broadcast(context: Context): Promise<void>;
 
   /**
-   * Raises a specific intent for resolution against apps registered with the desktop agent.
+   * Raises a specific intent for resolution against apps registered with the Desktop Agent.
    *
    * The desktop agent MUST resolve the correct app to target based on the provided intent name and context data. If multiple matching apps are found, the user MAY be presented with a Resolver UI allowing them to pick one, or another method of Resolution applied to select an app.
    * Alternatively, the specific app or app instance to target can also be provided. A list of valid target applications and instances can be retrieved via `findIntent`.
    *
-   * If a target app for the intent cannot be found with the criteria provided or the user either closes the resolver UI or otherwise cancels resolution, the promise MUST be rejected with an `Error` object with a `message` chosen from the `ResolveError` enumeration. If a specific target `app` parameter was set, but either the app or app instance is not available, the promise MUST be rejected with an `Error` object with either the `ResolveError.TargetAppUnavailable` or `ResolveError.TargetInstanceUnavailable` string as its `message`. If an invalid context object is passed as an argument the promise MUST be rejected with an `Error` object with the `ResolveError.MalformedContext` string as its `message`.
+   * If a target app for the intent cannot be found with the criteria provided or the user either closes the resolver UI or otherwise cancels resolution, the promise MUST be rejected with an `Error` object with a `message` chosen from the `ResolveError` enumeration, or (if connected to a Desktop Agent Bridge) the `BridgingError` enumeration. If a specific target `app` parameter was set, but either the app or app instance is not available, the promise MUST be rejected with an `Error` object with either the `ResolveError.TargetAppUnavailable` or `ResolveError.TargetInstanceUnavailable` string as its `message`. If an invalid context object is passed as an argument the promise MUST be rejected with an `Error` object with the `ResolveError.MalformedContext` string as its `message`.
    *
    * If you wish to raise an Intent without a context, use the `fdc3.nothing` context type. This type exists so that apps can explicitly declare support for raising an intent without context.
    *
@@ -280,7 +280,7 @@ export interface DesktopAgent {
    *
    * Returns an `IntentResolution` object, see `raiseIntent()` for details.
    *
-   * If a target intent and app cannot be found with the criteria provided or the user either closes the resolver UI or otherwise cancels resolution, the promise MUST be rejected with an `Error` object with a `message` chosen from the `ResolveError` enumeration. If a specific target `app` parameter was set, but either the app or app instance is not available, the promise MUST be rejected with an `Error` object with either the `ResolveError.TargetAppUnavailable` or `ResolveError.TargetInstanceUnavailable` string as its `message`.  If an invalid context object is passed as an argument the promise MUST be rejected with an `Error` object with the `ResolveError.MalformedContext` string as its `message`.
+   * If a target intent and app cannot be found with the criteria provided or the user either closes the resolver UI or otherwise cancels resolution, the promise MUST be rejected with an `Error` object with a `message` chosen from the `ResolveError` enumeration, or (if connected to a Desktop Agent Bridge) the `BridgingError` enumeration. If a specific target `app` parameter was set, but either the app or app instance is not available, the promise MUST be rejected with an `Error` object with either the `ResolveError.TargetAppUnavailable` or `ResolveError.TargetInstanceUnavailable` string as its `message`.  If an invalid context object is passed as an argument the promise MUST be rejected with an `Error` object with the `ResolveError.MalformedContext` string as its `message`.
    *
    * ```javascript
    * // Resolve against all intents registered for the type of the specified context
@@ -293,7 +293,9 @@ export interface DesktopAgent {
   raiseIntentForContext(context: Context, app?: AppIdentifier): Promise<IntentResolution>;
 
   /**
-   * Adds a listener for incoming intents from the Desktop Agent. The handler function may return void or a promise that resolves to an `IntentResult`, which is either a `Context` object, representing any data that should be returned to the app that raised the intent, a `Channel` Object, a `PrivateChannel` over which data responses will be sent, or `void`. The `IntentResult` will be returned to the app that raised the intent via the `IntentResolution` and retrieved from it using the `getResult()` function.
+   * Adds a listener for incoming intents raised by other applications, via calls to `fdc3.raiseIntent` or `fdc3.raiseIntentForContext.  If the application is intended to be launched to resolve raised intents, it SHOULD add its intent listeners as quickly as possible after launch or an error MAY be returned to the caller and the intent and context may not be delivered. The exact timeout used is set by the Desktop Agent implementation, but MUST be at least 15 seconds.
+   *
+   * The handler function may return void or a promise that should resolve to an `IntentResult`, which is either a `Context` object, representing any data that should be returned to the app that raised the intent, a `Channel` Object, a `PrivateChannel` over which data responses will be sent, or `void`. The `IntentResult` will be returned to app that raised the intent via the `IntentResolution` and retrieved from it using the `getResult()` function.
    *
    * The Desktop Agent MUST reject the promise returned by the `getResult()` function of `IntentResolution` if: (1) the intent handling function's returned promise rejects, (2) the intent handling function doesn't return a promise, or (3) the returned promise resolves to an invalid type.
    *
@@ -347,9 +349,11 @@ export interface DesktopAgent {
   addIntentListener(intent: string, handler: IntentHandler): Promise<Listener>;
 
   /**
-   * Adds a listener for incoming context broadcasts from the Desktop Agent via User channels. If the consumer is only interested in a context of a particular type, they can they can specify that type. If the consumer is able to receive context of any type or will inspect types received, then they can pass `null` as the `contextType` parameter to receive all context types.
+   * Adds a listener for incoming context broadcasts from the Desktop Agent (via a User channel or `fdc3.open`API call. If the consumer is only interested in a context of a particular type, they can they can specify that type. If the consumer is able to receive context of any type or will inspect types received, then they can pass `null` as the `contextType` parameter to receive all context types.
    *
-   * Context broadcasts are only received from apps that are joined to the same User channel as the listening application, hence, if the application is not currently joined to a channel no broadcasts will be received. If this function is called after the app has already joined a channel and the channel already contains context that would be passed to the context listener, then it will be called immediately with that context.
+   * Context broadcasts are primarily received from apps that are joined to the same User Channel as the listening application, hence, if the application is not currently joined to a User Channel no broadcasts will be received from channels. If this function is called after the app has already joined a channel and the channel already contains context that would be passed to the context listener, then it will be called immediately with that context.
+   *
+   * Context may also be received via this listener if the application was launched via a call to  `fdc3.open`, where context was passed as an argument. In order to receive this, applications SHOULD add their context listener as quickly as possible after launch, or an error MAY be returned to the caller and the context may not be delivered. The exact timeout used is set by the Desktop Agent implementation, but MUST be at least 15 seconds.
    *
    * Optional metadata about the context message, including the app that originated the message, SHOULD be provided by the desktop agent implementation.
    *
@@ -379,7 +383,7 @@ export interface DesktopAgent {
    *
    * If an app is joined to a channel, all `fdc3.broadcast` calls will go to the channel, and all listeners assigned via `fdc3.addContextListener` will listen on the channel.
    *
-   * If the channel already contains context that would be passed to context listeners assed via `fdc3.addContextListener` then those listeners will be called immediately with that context.
+   * If the channel already contains context that would be passed to context listeners added via `fdc3.addContextListener` then those listeners will be called immediately with that context.
    *
    * An app can only be joined to one channel at a time.
    *
@@ -417,7 +421,7 @@ export interface DesktopAgent {
    *
    * If the `PrivateChannel` cannot be created, the returned promise MUST be rejected with an `Error` object with a `message` chosen from the `ChannelError` enumeration.
    *
-   * The `PrivateChannel` type is provided to support synchronisation of data transmitted over returned channels, by allowing both parties to listen for events denoting subscription and unsubscription from the returned channel. `PrivateChannels` are only retrievable via raising an intent.
+   * The `PrivateChannel` type is provided to support synchronization of data transmitted over returned channels, by allowing both parties to listen for events denoting subscription and unsubscription from the returned channel. `PrivateChannels` are only retrievable via raising an intent.
    *
    *  * It is intended that Desktop Agent implementations:
    * - SHOULD restrict external apps from listening or publishing on this channel.
@@ -509,6 +513,8 @@ export interface DesktopAgent {
    * Retrieves the `AppMetadata` for an `AppIdentifier`, which provides additional metadata (such as icons,
    * a title and description) from the App Directory record for the application, that may be used for display
    * purposes.
+   *
+   * If the app is not found, the promise MUST be rejected with an `Error` Object with the `message` given by `ResolveError.TargetAppUnavailable`, or (if connected to a Desktop Agent Bridge) an error from the `BridgingError` enumeration.
    *
    * ```js
    * let appIdentifier = { appId: "MyAppId@my.appd.com" }

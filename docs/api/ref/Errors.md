@@ -34,14 +34,14 @@ enum ChannelError {
 
 Contains constants representing the errors that can be encountered when calling channels using the [`joinUserChannel`](DesktopAgent#joinuserchannel) or [`getOrCreateChannel`](DesktopAgent#getorcreatechannel) methods, or the [`getCurrentContext`](Channel#getcurrentcontext), [`broadcast`](Channel#broadcast) or [`addContextListener`](Channel#addcontextlistener) methods on the `Channel` object.
 
-#### See also
+**See also:**
 
-* [`DesktopAgent.createPrivateChannel`](DesktopAgent#createprivatechannel)
-* [`DesktopAgent.joinUserChannel`](DesktopAgent#joinuserchannel)
-* [`DesktopAgent.getOrCreateChannel`](DesktopAgent#getorcreatechannel)
-* [`Channel.broadcast`](Channel#broadcast)
-* [`Channel.addContextListener`](Channel#addcontextlistener)
-* [`Channel.getCurrentContext`](Channel#getcurrentcontext)
+- [`DesktopAgent.createPrivateChannel`](DesktopAgent#createprivatechannel)
+- [`DesktopAgent.joinUserChannel`](DesktopAgent#joinuserchannel)
+- [`DesktopAgent.getOrCreateChannel`](DesktopAgent#getorcreatechannel)
+- [`Channel.broadcast`](Channel#broadcast)
+- [`Channel.addContextListener`](Channel#addcontextlistener)
+- [`Channel.getCurrentContext`](Channel#getcurrentcontext)
 
 ## `OpenError`
 
@@ -68,14 +68,18 @@ enum OpenError {
    *  that has a `string` value.
    */
   MalformedContext = 'MalformedContext',
+
+    /** @experimental Returned if the specified Desktop Agent is not found, via a connected 
+   *  Desktop Agent Bridge. */
+  DesktopAgentNotFound = 'DesktopAgentNotFound',
 }
 ```
 
 Contains constants representing the errors that can be encountered when calling the [`open`](DesktopAgent#open) method on the [DesktopAgent](DesktopAgent) object.
 
-#### See also
+**See also:**
 
-* [`DesktopAgent.open`](DesktopAgent#open)
+- [`DesktopAgent.open`](DesktopAgent#open)
 
 ## `ResolveError`
 
@@ -123,17 +127,21 @@ export enum ResolveError {
    *  field that has a `string` value.
    */
   MalformedContext = 'MalformedContext',
+
+    /** @experimental Returned if the specified Desktop Agent is not found, via a connected 
+   *  Desktop Agent Bridge. */
+  DesktopAgentNotFound = 'DesktopAgentNotFound',
 }
 ```
 
 Contains constants representing the errors that can be encountered when calling the [`findIntent`](DesktopAgent#findintent), [`findIntentsByContext`](DesktopAgent#findintentsbycontext), [`raiseIntent`](DesktopAgent#raiseintent) or [`raiseIntentForContext`](DesktopAgent#raiseintentforcontext) methods on the [DesktopAgent](DesktopAgent).
 
-#### See also
+**See also:**
 
-* [`DesktopAgent.findIntent`](DesktopAgent#findintent)
-* [`DesktopAgent.findIntentsByContext`](DesktopAgent#findintentsbycontext)
-* [`DesktopAgent.raiseIntent`](DesktopAgent#raiseintent)
-* [`DesktopAgent.raiseIntentForContext`](DesktopAgent#raiseintentforcontext)
+- [`DesktopAgent.findIntent`](DesktopAgent#findintent)
+- [`DesktopAgent.findIntentsByContext`](DesktopAgent#findintentsbycontext)
+- [`DesktopAgent.raiseIntent`](DesktopAgent#raiseintent)
+- [`DesktopAgent.raiseIntentForContext`](DesktopAgent#raiseintentforcontext)
 
 ## `ResultError`
 
@@ -153,8 +161,39 @@ enum ResultError {
 
 Contains constants representing the errors that can be encountered when calling the [`getResult`](DesktopAgent#findintent) method on the [IntentResolution](Metadata#intentresolution) Object.
 
-#### See also
+**See also:**
 
-* [`DesktopAgent.addIntentListener`](DesktopAgent#addintentlistener)
-* [`DesktopAgent.raiseIntent`](DesktopAgent#raiseintent)
-* [`IntentResolution`](Metadata#intentresolution)
+- [`DesktopAgent.addIntentListener`](DesktopAgent#addintentlistener)
+- [`DesktopAgent.raiseIntent`](DesktopAgent#raiseintent)
+- [`IntentResolution`](Metadata#intentresolution)
+
+## `BridgingError`
+
+`@experimental`
+
+```typescript
+enum BridgingError {
+  /** @experimental Returned if a Desktop Agent did not return a response, via 
+   *  Desktop Agent Bridging, within the alloted timeout. */
+  ResponseTimedOut = 'ResponseToBridgeTimedOut',
+  /** @experimental Returned if a Desktop Agent that has been targeted by a 
+   *  particular request has been disconnected from the Bridge before a 
+   *  response has been received from it. */
+  AgentDisconnected = 'AgentDisconnected',
+  /** @experimental Returned for FDC3 API calls that are specified with
+   *  arguments indicating that a remote Desktop agent should be targeted
+   *  (e.g. raiseIntent with an app on a remote DesktopAgent targeted), 
+   *  when the local Desktop Agent is not connected to a bridge. */
+  NotConnectedToBridge = 'NotConnectedToBridge',
+  /** @experimental Returned if a message to a Bridge deviates from the schema
+   *  for that message sufficiently that it could not be processed.
+   */
+  MalformedMessage = 'MalformedMessage'
+}
+```
+
+Contains constants representing the errors that can be encountered when queries are forwarded to a Desktop Agent Bridge, but one or more remote Desktop Agents connected to it disconnects, times-out or a malformed message is encountered while a particular request is in flight. These errors may be returned via the FDC3 API when a Desktop Agent is (or was) connected to a Desktop Agent Bridge.
+
+**See also:**
+
+- [Agent Bridging - Workflows broken by disconnects](../../agent-bridging/spec##workflows-broken-by-disconnects)
